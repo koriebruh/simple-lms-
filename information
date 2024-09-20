@@ -1,0 +1,44 @@
+get all course
+-> format output
+
+{
+    code : 2xx
+    status : OK
+    data : {
+        id: 1
+        name: 'JamalKingGolang'
+        price: 499
+        teacher :[]{
+            id: 10
+            username: 'KingJamal'
+            fullname: 'M.Jamaludin Nur'
+        }
+    }
+}
+
+price big int ganti int64
+
+user profile by id, tambahakan juga course yaang sudha dibuat jika role teacher
+usage inerjoin course dan user
+{
+    code : 2xx
+    status : OK
+    data : {
+        username :
+        fullname :
+        email :
+        course [] {
+            id
+            name
+            description
+            price
+        }
+    }
+}
+
+trus show course dengan  sarat dan tersedikit
+- show 5 course dengan harga terendah
+- show 5 course dengan harga mahal
+- show 5 course dengan harga avg
+- show top 5 cource pupular (paling banyak member)
+- top 5 unpopular
