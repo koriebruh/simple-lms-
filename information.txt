@@ -8,7 +8,7 @@ get all course
         id: 1
         name: 'JamalKingGolang'
         price: 499
-        teacher :[]{
+        teacher : {
             id: 10
             username: 'KingJamal'
             fullname: 'M.Jamaludin Nur'

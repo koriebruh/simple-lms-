@@ -1,9 +1,9 @@
 package services
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"jamal/tgs/helper"
 	"jamal/tgs/models/web"
 	"jamal/tgs/repository"
 	"net/http"
@@ -12,7 +12,13 @@ import (
 type CourseServiceImpl struct {
 	courseRepository repository.CourseRepository
 	db               *gorm.DB
-	// latter we add validate
+}
+
+func NewCourseServiceImpl(courseRepo repository.CourseRepository, db *gorm.DB) CourseService {
+	return &CourseServiceImpl{
+		courseRepository: courseRepo,
+		db:               db,
+	}
 }
 
 func (service CourseServiceImpl) Create(ctx *gin.Context) web.CourseCreateRequest {
@@ -25,41 +31,67 @@ func (service CourseServiceImpl) Create(ctx *gin.Context) web.CourseCreateReques
 	panic("implement me")
 }
 
-func (service CourseServiceImpl) Delete(ctx *gin.Context, courseId int) {
-	//TODO implement me
+func (service CourseServiceImpl) Delete(ctx *gin.Context, courseId int) web.WebResponse {
+	/// START TRANSACTION
+	var err error
+	tx := service.db.Begin()
+	if tx.Error != nil {
+		return helper.WebResponsesFunc(http.StatusInternalServerError, "INTERNAL SERVER ERROR", "error in start tx")
+	}
+	defer helper.CommitOrRollback(tx, &err)
 
-	/// PUNYA AKUN USER
 	/// ROLES TEACHER OR ADMIN
+
 	/// FIND BY ID
 	/// DELETE
-
 	panic("implement me")
 }
 
 func (service CourseServiceImpl) FindById(ctx *gin.Context, courseId int) web.WebResponse {
+	/// START TRANSACTION
+	var err error
 	tx := service.db.Begin()
 	if tx.Error != nil {
-		return panic(errors.New("ERROR DI EKSEKUSI QUERY REPOSITORY"))
+		return helper.WebResponsesFunc(http.StatusInternalServerError, "INTERNAL SERVER ERROR", "error in start tx")
 	}
+	defer helper.CommitOrRollback(tx, &err)
 
+	/// FIND ID
 	course, err := service.courseRepository.FindById(courseId)
 	if err != nil {
-		tx.Rollback()
+		return helper.WebResponsesFunc(http.StatusBadRequest, "BAD REQUEST", "id not found")
 	}
 
-	tx.Commit()
-	return web.WebResponse{
-		Code: http.StatusOk,
-	}
+	return helper.WebResponsesFunc(http.StatusOK, "OK", course)
 
 }
 
 func (service CourseServiceImpl) FindAll(ctx *gin.Context) []web.WebResponse {
-	//TODO implement me
+	var responses []web.WebResponse
 
-	// FIND ALL
+	// Mulai transaksi
+	var err error
+	tx := service.db.Begin()
+	if tx.Error != nil {
+		responses = append(responses, helper.WebResponsesFunc(http.StatusInternalServerError, "INTERNAL SERVER ERROR", "error starting transaction"))
+		return responses
+	}
+	defer helper.CommitOrRollback(tx, &err)
 
-	panic("implement me")
+	// Mengambil semua kursus dari repository
+	courses, err := service.courseRepository.FindAll()
+	if err != nil {
+		responses = append(responses, helper.WebResponsesFunc(http.StatusInternalServerError, "INTERNAL SERVER ERROR", err.Error()))
+		return responses
+	}
+
+	// Kembalikan response dengan data kursus
+	for _, course := range courses {
+		responses = append(responses, helper.WebResponsesFunc(http.StatusOK, "OK", course))
+	}
+
+	return responses
+
 }
 
 func (service CourseServiceImpl) Update(ctx *gin.Context, courseId int) web.WebResponse {

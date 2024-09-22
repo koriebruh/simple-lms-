@@ -10,6 +10,10 @@ type CourseRepositoryImpl struct {
 	db *gorm.DB
 }
 
+func NewCourseRepository(db *gorm.DB) *CourseRepositoryImpl {
+	return &CourseRepositoryImpl{db: db}
+}
+
 func (repository CourseRepositoryImpl) Create(course *domain.Course) (domain.Course, error) {
 	result := repository.db.Create(course)
 	if result.Error != nil {
@@ -41,7 +45,7 @@ func (repository CourseRepositoryImpl) FindById(courseId int) (domain.Course, er
 	return course, nil
 }
 
-func (repository CourseRepositoryImpl) FindAll() ([]CourseFORMAT, error) {
+func (repository CourseRepositoryImpl) FindAll() ([]domain.CourseFindAll, error) {
 	var results []struct {
 		CourseID    uint   `json:"course_id"`
 		CourseName  string `json:"course_name"`
@@ -67,13 +71,13 @@ func (repository CourseRepositoryImpl) FindAll() ([]CourseFORMAT, error) {
 		return nil, result.Error
 	}
 
-	courses := make([]CourseFORMAT, len(results))
+	courses := make([]domain.CourseFindAll, len(results))
 	for i, r := range results {
-		courses[i] = CourseFORMAT{
+		courses[i] = domain.CourseFindAll{
 			CourseID:    r.CourseID,
 			CourseName:  r.CourseName,
 			CoursePrice: r.CoursePrice,
-			Teacher: Teacher{
+			Teacher: domain.Teacher{
 				UserID:   r.UserID,
 				Username: r.Username,
 				FullName: r.FullName,
